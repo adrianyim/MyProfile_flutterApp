@@ -9,18 +9,27 @@ class _UpdatePhoneState extends State<UpdatePhone> {
 
   TextEditingController phoneController = TextEditingController();
   Map data = {};
+  bool _autoValidate = false;
+  GlobalKey<FormState> _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
 
     data = ModalRoute.of(context).settings.arguments;
-    phoneController.text = data['phone'].trim();
+    phoneController.text = data['phone'];
 
     void updatePhone(TextEditingController phone) {
 
-      Navigator.pop(context, {
-        'phone': phone.text,
-      });
+      if (_key.currentState.validate()) {
+        // _key.currentState.save();
+        Navigator.pop(context, {
+          'phone': phone.text,
+        });
+      } else {
+        setState(() {
+          _autoValidate = true;
+        });
+      }
     }
 
     return Scaffold(
@@ -51,23 +60,28 @@ class _UpdatePhoneState extends State<UpdatePhone> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextFormField(
-                          controller: phoneController,
-                          decoration: InputDecoration(
-                            labelText: 'Your phone number',
-                            labelStyle: TextStyle(
-                              fontSize: 16.0,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
+                        child: Form(
+                          key: _key,
+                          child: TextFormField(
+                            controller: phoneController,
+                            decoration: InputDecoration(
+                              labelText: 'Your phone number',
+                              labelStyle: TextStyle(
+                                fontSize: 16.0,
                                 color: Colors.grey,
-                                width: 0.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.grey,
+                                  width: 0.5,
+                                ),
                               ),
                             ),
+                            keyboardType: TextInputType.phone,
+                            autovalidate: _autoValidate,
+                            validator: phoneValidator,
                           ),
-
                         ),
                       ),
                     ],
@@ -91,4 +105,14 @@ class _UpdatePhoneState extends State<UpdatePhone> {
           })
     );
   }
+}
+
+String phoneValidator(String value) {
+  String pattern = r'(^(\+\d{1,2}\s)?\(?\d{3}\)?[\S\s.-]\d{3}[\s.-]\d{4}$)';
+  RegExp regExp = RegExp(pattern);
+
+  if (!regExp.hasMatch(value)) {
+    return 'Invalid input';
+  }
+    return null;
 }

@@ -9,18 +9,27 @@ class _UpdateEmailState extends State<UpdateEmail> {
 
   TextEditingController emailController = TextEditingController();
   Map data = {};
+  bool _autoValidate = false;
+  GlobalKey<FormState> _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
 
     data = ModalRoute.of(context).settings.arguments;
-    emailController.text = data['email'].trim();
+    emailController.text = data['email'];
 
     void updateEmail(TextEditingController email) {
 
-      Navigator.pop(context, {
-        'email': email.text,
-      });
+      if (_key.currentState.validate()) {
+        // _key.currentState.save();
+        Navigator.pop(context, {
+          'email': email.text,
+        });
+      } else {
+        setState(() {
+          _autoValidate = true;
+        });
+      }
     }
 
     return Scaffold(
@@ -51,23 +60,28 @@ class _UpdateEmailState extends State<UpdateEmail> {
                   Row(
                     children: [
                       Expanded(
-                        child: TextFormField(
-                          controller: emailController,
-                          decoration: InputDecoration(
-                            labelText: 'Your email address',
-                            labelStyle: TextStyle(
-                              fontSize: 16.0,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide(
+                        child: Form(
+                          key: _key,
+                          child: TextFormField(
+                            controller: emailController,
+                            decoration: InputDecoration(
+                              labelText: 'Your email address',
+                              labelStyle: TextStyle(
+                                fontSize: 16.0,
                                 color: Colors.grey,
-                                width: 0.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.grey,
+                                  width: 0.5,
+                                ),
                               ),
                             ),
+                            keyboardType: TextInputType.emailAddress,
+                            autovalidate: _autoValidate,
+                            validator: emailValidator,
                           ),
-
                         ),
                       ),
                     ],
@@ -92,4 +106,14 @@ class _UpdateEmailState extends State<UpdateEmail> {
       )
     );
   }
+}
+
+String emailValidator(String value) {
+  String pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+  RegExp regExp = RegExp(pattern);
+
+  if (!regExp.hasMatch(value)) {
+    return 'Invalid input';
+  }
+  return null;
 }
