@@ -1,6 +1,6 @@
 # myprofile_flutter_app
 
-A profile flutter app
+A profile flutter app that using Android Studio and Flutter language.
 
 ## Getting Started
 
